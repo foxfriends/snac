@@ -6,10 +6,7 @@ import {
 } from "./Neighbourhood.js";
 
 export class WorldView {
-  constructor(
-    private world: World,
-    public position: readonly number[],
-  ) {}
+  constructor(private world: World, public position: readonly number[]) {}
 
   get dimensions() {
     return this.world.dimensions;

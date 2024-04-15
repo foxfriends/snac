@@ -8,27 +8,24 @@ export type Position<D extends Dimensions> = D extends readonly [
   ...infer Rest extends Dimensions,
 ]
   ? [number, ...Position<Rest>]
-  : D extends []
-    ? []
-    : number[];
+  : D extends readonly []
+  ? []
+  : number[];
 
-export type Grid<D extends Dimensions, T> = D extends [number]
+export type Grid<D extends Dimensions, T> = D extends readonly [number]
   ? T[]
-  : D extends [number, ...infer Rest extends Dimensions]
-    ? Grid<Rest, T>[]
-    : D extends []
-      ? []
-      : never;
+  : D extends readonly [number, ...infer Rest extends Dimensions]
+  ? Grid<Rest, T>[]
+  : D extends readonly []
+  ? []
+  : never;
 
 export class World<D extends Dimensions = Dimensions> {
   static clone<D extends Dimensions>(world: World<D>): World<D> {
     return new World(world.dimensions, (position) => world.getCell(position));
   }
 
-  constructor(
-    public dimensions: D,
-    init: (position: Position<D>) => Cell,
-  ) {
+  constructor(public dimensions: D, init: (position: Position<D>) => Cell) {
     const length = dimensions.reduce((a, b) => a * b, 1);
     this.state = Array.from(new Array(length), (_, pos) => init(this.unravel(pos)));
   }
