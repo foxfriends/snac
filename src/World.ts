@@ -3,6 +3,9 @@ import { WorldView } from "./WorldView";
 
 export type Dimensions = readonly number[];
 
+export type Dim2 = readonly [number, number];
+export type Dim3 = readonly [number, number, number];
+
 export type Position<D extends Dimensions> = D extends readonly [
   infer _,
   ...infer Rest extends Dimensions,
@@ -25,12 +28,12 @@ export class World<D extends Dimensions = Dimensions> {
     return new World(world.dimensions, (position) => world.getCell(position));
   }
 
-  constructor(public dimensions: D, init: (position: Position<D>) => Cell) {
+  constructor(public dimensions: D, init: (position: Position<D>) => Cell<D>) {
     const length = dimensions.reduce((a, b) => a * b, 1);
     this.state = Array.from(new Array(length), (_, pos) => init(this.unravel(pos)));
   }
 
-  private state: Cell[];
+  private state: Cell<D>[];
 
   ravel(position: Position<D>): number {
     return position.reduce((prev, pos, i) => prev * this.dimensions[i] + pos, 0);
@@ -55,7 +58,7 @@ export class World<D extends Dimensions = Dimensions> {
     return this.state[this.ravel(position)];
   }
 
-  view(position: Position<D>): WorldView {
+  view(position: Position<D>): WorldView<D> {
     return new WorldView(this, position);
   }
 
@@ -65,7 +68,7 @@ export class World<D extends Dimensions = Dimensions> {
     }
   }
 
-  dump<T>(dumper: (cell: Cell) => T): Grid<D, T> {
+  dump<T>(dumper: (cell: Cell<D>) => T): Grid<D, T> {
     const grid: unknown[] = [];
     for (const [i, cell] of this.state.entries()) {
       const value = dumper(cell);
@@ -79,7 +82,7 @@ export class World<D extends Dimensions = Dimensions> {
     return grid as Grid<D, T>;
   }
 
-  *[Symbol.iterator](): Generator<[Position<D>, Cell]> {
+  *[Symbol.iterator](): Generator<[Position<D>, Cell<D>]> {
     for (const [i, cell] of this.state.entries()) {
       yield [this.unravel(i), cell];
     }

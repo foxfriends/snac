@@ -1,15 +1,24 @@
-import type { World } from "./World.js";
+import type { Dim2, Dimensions, Position, World } from "./World.js";
 import {
   MooreNeighbourhood,
   VonNeumannNeighbourhood,
   type Neighbourhood,
 } from "./Neighbourhood.js";
 
-export class WorldView {
-  constructor(private world: World, public position: readonly number[]) {}
+export class WorldView<D extends Dimensions = Dim2> {
+  constructor(private world: World<D>, public position: readonly number[]) {}
 
   get dimensions() {
     return this.world.dimensions;
+  }
+
+  getCell(position: Position<D>) {
+    return this.world.getCell(position);
+  }
+
+  getRelative(offset: Position<D>) {
+    const position = this.position.map((v, i) => v + offset[i]) as Position<D>;
+    return this.getCell(position);
   }
 
   /**

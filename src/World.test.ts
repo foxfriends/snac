@@ -1,14 +1,14 @@
 import test from "ava";
 import { Cell } from "./Cell";
-import { World } from "./World";
+import { Dim3, World } from "./World";
 import { WorldView } from "./WorldView";
 
-class PosCell extends Cell {
+class PosCell extends Cell<Dim3> {
   constructor(public pos: readonly number[]) {
     super();
   }
 
-  update(_world: WorldView): Cell {
+  update(_world: WorldView<Dim3>): Cell<Dim3> {
     return this;
   }
 }
@@ -31,7 +31,7 @@ test("ravel works", (t) => {
 });
 
 test("unravel works", (t) => {
-  const world = new World([5, 3, 4], (pos) => new PosCell(pos));
+  const world = new World([5, 3, 4] as const, (pos) => new PosCell(pos));
   t.deepEqual(world.unravel((1 * 3 + 2) * 4 + 3), [1, 2, 3]);
 });
 
@@ -40,7 +40,7 @@ class LifeCell extends Cell {
     super();
   }
 
-  update(world: WorldView) {
+  update(world: WorldView<[number, number]>) {
     const neighbours = world
       .moore()
       .filter((cell): cell is LifeCell => cell instanceof LifeCell)
