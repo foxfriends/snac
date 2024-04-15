@@ -8,7 +8,7 @@ class PosCell extends Cell {
     super();
   }
 
-  update(world: WorldView): Cell {
+  update(_world: WorldView): Cell {
     return this;
   }
 }

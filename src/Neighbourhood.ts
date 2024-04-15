@@ -30,11 +30,7 @@ export abstract class Neighbourhood<T extends Cell = Cell> implements Iterable<T
 }
 
 export class VonNeumannNeighbourhood extends Neighbourhood<Cell> {
-  constructor(
-    private world: World,
-    private range: number,
-    private position: readonly number[],
-  ) {
+  constructor(private world: World, private range: number, private position: readonly number[]) {
     super();
   }
 
@@ -51,11 +47,7 @@ export class VonNeumannNeighbourhood extends Neighbourhood<Cell> {
 }
 
 export class MooreNeighbourhood extends Neighbourhood<Cell> {
-  constructor(
-    private world: World,
-    private range: number,
-    private position: readonly number[],
-  ) {
+  constructor(private world: World, private range: number, private position: readonly number[]) {
     super();
   }
 

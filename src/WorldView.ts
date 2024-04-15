@@ -4,7 +4,6 @@ import {
   VonNeumannNeighbourhood,
   type Neighbourhood,
 } from "./Neighbourhood.js";
-import type { Cell } from "./Cell.js";
 
 export class WorldView {
   constructor(
@@ -29,7 +28,7 @@ export class WorldView {
    * .....
    * ```
    */
-  moore(range: number = 1): Neighbourhood {
+  moore(range = 1): Neighbourhood {
     return new MooreNeighbourhood(this.world, range, this.position);
   }
 
@@ -46,7 +45,7 @@ export class WorldView {
    * .....
    * ```
    */
-  vonNeumann(range: number = 1): Neighbourhood {
+  vonNeumann(range = 1): Neighbourhood {
     return new VonNeumannNeighbourhood(this.world, range, this.position);
   }
 }

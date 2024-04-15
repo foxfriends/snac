@@ -10,7 +10,7 @@ export type Position<D extends Dimensions> = D extends readonly [
   ? [number, ...Position<Rest>]
   : D extends []
     ? []
-    : never;
+    : number[];
 
 export type Grid<D extends Dimensions, T> = D extends [number]
   ? T[]
@@ -62,24 +62,24 @@ export class World<D extends Dimensions = Dimensions> {
     return new WorldView(this, position);
   }
 
-  update(rounds: number = 1) {
+  update(rounds = 1) {
     for (let i = 0; i < rounds; ++i) {
       this.state = this.state.map((cell, i) => cell.update(this.view(this.unravel(i))));
     }
   }
 
   dump<T>(dumper: (cell: Cell) => T): Grid<D, T> {
-    const grid: Grid<D, T> = [] as Grid<D, T>;
+    const grid: unknown[] = [];
     for (const [i, cell] of this.state.entries()) {
       const value = dumper(cell);
       const position = this.unravel(i);
       const container = position
         .slice(0, -1)
-        // @ts-expect-error
-        .reduce((grid, index) => (grid[index] ??= []), grid) as T[];
+        // @ts-expect-error -- Doing some witchcraft
+        .reduce((grid, index) => (grid[index] ??= []), grid) as unknown as T[];
       container[position[position.length - 1]] = value;
     }
-    return grid;
+    return grid as Grid<D, T>;
   }
 
   *[Symbol.iterator]() {
