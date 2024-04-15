@@ -81,4 +81,10 @@ export class World<D extends Dimensions = Dimensions> {
     }
     return grid;
   }
+
+  *[Symbol.iterator]() {
+    for (const [i, cell] of this.state.entries()) {
+      yield [this.unravel(i), cell];
+    }
+  }
 }
