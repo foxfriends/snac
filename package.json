@@ -1,5 +1,5 @@
 {
-  "name": "snac",
+  "name": "@foxfriends/snac",
   "version": "0.1.0",
   "description": "Snac Node Automaton (Cellular)",
   "main": "build/index.js",
