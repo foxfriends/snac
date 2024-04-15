@@ -82,7 +82,7 @@ export class World<D extends Dimensions = Dimensions> {
     return grid as Grid<D, T>;
   }
 
-  *[Symbol.iterator]() {
+  *[Symbol.iterator](): Generator<[Position<D>, Cell]> {
     for (const [i, cell] of this.state.entries()) {
       yield [this.unravel(i), cell];
     }
