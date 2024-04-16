@@ -23,12 +23,6 @@ export type Grid<D extends Dimensions, T> = D extends readonly [number]
       ? []
       : never;
 
-export class UnregisteredCellError extends Error {
-  constructor(public cellType: CellConstructor<Cell>) {
-    super(`Unknown cell type: ${cellType.name}`);
-  }
-}
-
 export class World<D extends Dimensions = Dimensions> {
   static clone<D extends Dimensions>(world: World<D>): World<D> {
     return new World(world.dimensions, (position) => world.getCell(position));
@@ -81,11 +75,16 @@ export class World<D extends Dimensions = Dimensions> {
     return this;
   }
 
+  unregisterCell<T extends Cell>(CellType: CellConstructor<T>): this {
+    this.updaters.delete(CellType);
+    return this;
+  }
+
   update(rounds = 1) {
     for (let i = 0; i < rounds; ++i) {
       this.state = this.state.map((cell, i) => {
         const update = this.updaters.get(cell.constructor as CellConstructor<Cell>);
-        if (!update) throw new UnregisteredCellError(cell.constructor as CellConstructor<Cell>);
+        if (!update) return cell;
         return update(cell, this.view(this.unravel(i)));
       });
     }
