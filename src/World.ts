@@ -1,4 +1,4 @@
-import type { Cell } from "./Cell";
+import type { Cell, CellConstructor } from "./Cell";
 import { WorldView } from "./WorldView";
 
 export type Dimensions = readonly number[];
@@ -12,28 +12,39 @@ export type Position<D extends Dimensions> = D extends readonly [
 ]
   ? [number, ...Position<Rest>]
   : D extends readonly []
-  ? []
-  : number[];
+    ? []
+    : number[];
 
 export type Grid<D extends Dimensions, T> = D extends readonly [number]
   ? T[]
   : D extends readonly [number, ...infer Rest extends Dimensions]
-  ? Grid<Rest, T>[]
-  : D extends readonly []
-  ? []
-  : never;
+    ? Grid<Rest, T>[]
+    : D extends readonly []
+      ? []
+      : never;
+
+export class UnregisteredCellError extends Error {
+  constructor(public cellType: CellConstructor<Cell>) {
+    super(`Unknown cell type: ${cellType.name}`);
+  }
+}
 
 export class World<D extends Dimensions = Dimensions> {
   static clone<D extends Dimensions>(world: World<D>): World<D> {
     return new World(world.dimensions, (position) => world.getCell(position));
   }
 
-  constructor(public dimensions: D, init: (position: Position<D>) => Cell<D>) {
+  constructor(
+    public dimensions: D,
+    init: (position: Position<D>) => Cell,
+  ) {
     const length = dimensions.reduce((a, b) => a * b, 1);
     this.state = Array.from(new Array(length), (_, pos) => init(this.unravel(pos)));
   }
 
-  private state: Cell<D>[];
+  private state: Cell[];
+  private updaters: Map<CellConstructor<Cell>, (cell: Cell, world: WorldView<D>) => Cell> =
+    new Map();
 
   ravel(position: Position<D>): number {
     return position.reduce((prev, pos, i) => prev * this.dimensions[i] + pos, 0);
@@ -62,13 +73,25 @@ export class World<D extends Dimensions = Dimensions> {
     return new WorldView(this, position);
   }
 
+  registerCell<T extends Cell>(
+    CellType: CellConstructor<T>,
+    update: (cell: T, world: WorldView<D>) => Cell,
+  ): this {
+    this.updaters.set(CellType, update as (cell: Cell, world: WorldView<D>) => Cell);
+    return this;
+  }
+
   update(rounds = 1) {
     for (let i = 0; i < rounds; ++i) {
-      this.state = this.state.map((cell, i) => cell.update(this.view(this.unravel(i))));
+      this.state = this.state.map((cell, i) => {
+        const update = this.updaters.get(cell.constructor as CellConstructor<Cell>);
+        if (!update) throw new UnregisteredCellError(cell.constructor as CellConstructor<Cell>);
+        return update(cell, this.view(this.unravel(i)));
+      });
     }
   }
 
-  dump<T>(dumper: (cell: Cell<D>) => T): Grid<D, T> {
+  dump<T>(dumper: (cell: Cell) => T): Grid<D, T> {
     const grid: unknown[] = [];
     for (const [i, cell] of this.state.entries()) {
       const value = dumper(cell);
@@ -82,7 +105,7 @@ export class World<D extends Dimensions = Dimensions> {
     return grid as Grid<D, T>;
   }
 
-  *[Symbol.iterator](): Generator<[Position<D>, Cell<D>]> {
+  *[Symbol.iterator](): Generator<[Position<D>, Cell]> {
     for (const [i, cell] of this.state.entries()) {
       yield [this.unravel(i), cell];
     }

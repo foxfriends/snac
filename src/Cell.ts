@@ -1,6 +1,9 @@
-import { Dim2, Dimensions } from "./World";
-import { WorldView } from "./WorldView";
+export interface CellConstructor<C> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  new (...args: any): C;
+}
 
-export abstract class Cell<D extends Dimensions = Dim2> {
-  abstract update(world: WorldView<D>): Cell<D>;
+export interface Cell {
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  constructor: Function;
 }

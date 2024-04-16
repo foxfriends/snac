@@ -1,16 +1,10 @@
 import test from "ava";
 import { Cell } from "./Cell";
-import { Dim3, World } from "./World";
+import { Dim2, Dim3, World } from "./World";
 import { WorldView } from "./WorldView";
 
-class PosCell extends Cell<Dim3> {
-  constructor(public pos: readonly number[]) {
-    super();
-  }
-
-  update(_world: WorldView<Dim3>): Cell<Dim3> {
-    return this;
-  }
+class PosCell implements Cell {
+  constructor(public pos: readonly number[]) {}
 }
 
 test("cells are initialized with correct positions", (t) => {
@@ -35,27 +29,24 @@ test("unravel works", (t) => {
   t.deepEqual(world.unravel((1 * 3 + 2) * 4 + 3), [1, 2, 3]);
 });
 
-class LifeCell extends Cell {
-  constructor(public live: boolean) {
-    super();
-  }
+class LifeCell implements Cell {
+  constructor(public live: boolean) {}
+}
 
-  update(world: WorldView<[number, number]>) {
+test("game of life", (t) => {
+  const world = new World<Dim2>([3, 3], (pos) => new LifeCell(pos[0] === 1));
+  const before = world.dump((cell) => (cell as LifeCell).live);
+  world.registerCell(LifeCell, (cell: LifeCell, world: WorldView) => {
     const neighbours = world
       .moore()
       .filter((cell): cell is LifeCell => cell instanceof LifeCell)
       .filter((cell) => cell.live)
       .count();
-    if (this.live && neighbours < 2) return new LifeCell(false);
-    if (this.live && neighbours > 3) return new LifeCell(false);
-    if (!this.live && neighbours === 3) return new LifeCell(true);
-    return this;
-  }
-}
-
-test("game of life", (t) => {
-  const world = new World([3, 3], (pos) => new LifeCell(pos[0] === 1));
-  const before = world.dump((cell) => (cell as LifeCell).live);
+    if (cell.live && neighbours < 2) return new LifeCell(false);
+    if (cell.live && neighbours > 3) return new LifeCell(false);
+    if (!cell.live && neighbours === 3) return new LifeCell(true);
+    return cell;
+  });
   world.update();
   const after = world.dump((cell) => (cell as LifeCell).live);
   t.deepEqual(

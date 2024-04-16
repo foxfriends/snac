@@ -1,4 +1,4 @@
-import type { World } from "./World";
+import type { Dimensions, World } from "./World";
 import type { Cell } from "./Cell";
 
 export abstract class Neighbourhood<T extends Cell = Cell> implements Iterable<T> {
@@ -29,8 +29,14 @@ export abstract class Neighbourhood<T extends Cell = Cell> implements Iterable<T
   abstract [Symbol.iterator](): Generator<T>;
 }
 
-export class VonNeumannNeighbourhood extends Neighbourhood<Cell> {
-  constructor(private world: World, private range: number, private position: readonly number[]) {
+export class VonNeumannNeighbourhood<
+  D extends Dimensions = Dimensions,
+> extends Neighbourhood<Cell> {
+  constructor(
+    private world: World<D>,
+    private range: number,
+    private position: readonly number[],
+  ) {
     super();
   }
 
@@ -46,8 +52,12 @@ export class VonNeumannNeighbourhood extends Neighbourhood<Cell> {
   }
 }
 
-export class MooreNeighbourhood extends Neighbourhood<Cell> {
-  constructor(private world: World, private range: number, private position: readonly number[]) {
+export class MooreNeighbourhood<D extends Dimensions = Dimensions> extends Neighbourhood<Cell> {
+  constructor(
+    private world: World<D>,
+    private range: number,
+    private position: readonly number[],
+  ) {
     super();
   }
 
