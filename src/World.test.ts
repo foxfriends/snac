@@ -1,6 +1,6 @@
 import test from "ava";
 import { Cell } from "./Cell";
-import { Dim2, Dim3, World } from "./World";
+import { Dim2, World } from "./World";
 import { WorldView } from "./WorldView";
 
 class PosCell implements Cell {
